@@ -3,6 +3,7 @@ import json, csv
 import requests
 import time
 import pandas
+import datetime
 import numpy as np
 from pathlib import Path
 
@@ -25,8 +26,7 @@ pass_config = click.make_pass_decorator(Config, ensure=True)
 @click.option('--verbose', is_flag=True)
 @pass_config
 def cli(config,verbose):
-    """Canvas Command Line Interface -
-    Trinity Valley School"""
+    """Canvas Command Line Interface"""
     config.verbose=verbose
 
 
@@ -142,11 +142,15 @@ def renwebexport(config,input):
     df['section_sis'] = df['section_sis'].map(lambda x: x.lstrip(termid))
 
     #export to xlsx
-    writer = pandas.ExcelWriter('%s/Desktop/RenWeb %s.xlsx' %(str(Path.home()), input.split('/')[-1][:-4]))
+    outfile = Path('%s/Desktop/RenWeb %s.xlsx' %(str(Path.home()), input.split('/')[-1][:-4]))
+    if outfile.exists():
+        outfile = Path('%s/Desktop/RenWeb %s %s.xlsx' %(str(Path.home()), input.split('/')[-1][:-4], datetime.datetime.now()))
+
+    writer = pandas.ExcelWriter(outfile)
     df.to_excel(writer,'canvas', index=False)
     writer.save()
 
-    click.echo("File saved at: %s/Desktop/RenWeb %s.xlsx" %(str(Path.home()), input.split('/')[-1][:-4]))
+    click.echo("File saved at: %s" %(outfile))
 
 
 
