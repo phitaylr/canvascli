@@ -1,13 +1,14 @@
 # Canvas CLI
 
-This is a CLI utility for interacting with the Canvas API. 
+This is a CLI utility for interacting with the Canvas API.
 
 ## Commands:
-  archive              Move courses to archived term
-  deletecoursesbyterm  Delete all courses in a term
-  deleteunused         Delete unused courses from Unused Courses csv report
-  renwebexport         Prepare RenWeb export file
-  reportnoduedates     Report published assignments with no due dates
+
+*  archive              Move courses to archived term
+*  deletecoursesbyterm  Delete all courses in a term
+*  deleteunused         Delete unused courses from Unused Courses csv report
+*  renwebexport         Prepare RenWeb export file
+*  reportnoduedates     Report published assignments with no due dates
 
 ## Configuration
 
