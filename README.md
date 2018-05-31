@@ -14,7 +14,7 @@ This is a CLI utility for interacting with the Canvas API.
 
 ## Configuration
 
-The only configuration needed is api credentials. Make a file called credentials.json in the root directory. Then add your instance and api key.
+The only configuration needed is api credentials. Make a file called .canvasclicred.json in the user home directory. Then add your instance and api key.
 ```
 {
   "url": "https://INSTANCE.instructure.com/api/v1/",
