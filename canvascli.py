@@ -156,7 +156,7 @@ def renwebexport(config,input):
 
 ##########   API UTILITIES   ###########
 def loadCredentials():
-    with open("credentials.json", 'r') as f:
+    with open('%s/.canvasclicred.json' %(str(Path.home())), 'r') as f:
         credentials = json.load(f)
     apiurl = credentials['url']
     apiauth = credentials['auth']
