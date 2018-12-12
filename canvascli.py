@@ -152,6 +152,85 @@ def renwebexport(config,input):
 
     click.echo("File saved at: %s" %(outfile))
 
+@cli.command(help="Initialize a course with modules, units, etc.")
+@click.argument('course', nargs=1, type=int)
+@click.argument('n', nargs=1, type=int)
+@click.argument('unitname')
+@pass_config
+def courseinit(config,course, n, unitname):
+    apipost("%scourses/%s/folders" %(config.apiurl,course),{'name': 'Course Information','parent_folder_path': '/',},config)
+
+    modules=[]
+    #setup module organization
+    for i in range(1,n+1):
+        pages=[]
+        module = apipost("%scourses/%s/modules" %(config.apiurl,course),{'module[name]': '%s %s' %(unitname,i), 'module[position]': '%s' %(i)},config)
+        modules.append(module)
+        mid = module['id']
+
+        #make pages
+        with open('intropagetext.html', 'r') as intropagetextfile:
+            intropagetext = intropagetextfile.read()
+
+        #pages.append(apipost("%scourses/%s/pages" %(config.apiurl,course),{'wiki_page[title]': '%s %s: Objectives' %(unitname,i), 'wiki_page[body]': intropagetext },config))
+        # pages.append(apipost("%scourses/%s/pages" %(config.apiurl,course),{'wiki_page[title]': '%s %s: Vocabulary' %(unitname,i), 'wiki_page[body]': 'Add content vocabulary here.' },config))
+        # pages.append(apipost("%scourses/%s/pages" %(config.apiurl,course),{'wiki_page[title]': '%s %s: Tasks' %(unitname,i), 'wiki_page[body]': 'Add links to required tasks here.' },config))
+        #pages.append(apipost("%scourses/%s/pages" %(config.apiurl,course),{'wiki_page[title]': '%s %s: Resourses' %(unitname,i), 'wiki_page[body]': 'Add links to additional resources here.' },config))
+
+        for page in pages:
+            apipost("%scourses/%s/modules/%s/items" %(config.apiurl,course,mid),{'module_item[title]': '%s' %(page['title']), 'module_item[type]': 'Page', 'module_item[page_url]': '%s' %(page['url'])},config)
+
+
+        # SubHeaders
+        apipost("%scourses/%s/modules/%s/items" %(config.apiurl,course,mid),{'module_item[title]': 'Tasks', 'module_item[type]': 'SubHeader',},config)
+        apipost("%scourses/%s/modules/%s/items" %(config.apiurl,course,mid),{'module_item[title]': 'Graded Items', 'module_item[type]': 'SubHeader',},config)
+
+
+
+        #make folder
+        apipost("%scourses/%s/folders" %(config.apiurl,course),{'name': '%s %s' %(unitname,i),'parent_folder_path': '/'},config)
+
+    #make home page
+    # homepagetext="<h3>%ss</h3>\n<ul>" %(unitname)
+    # for module in modules:
+    #     homepagetext+=" <li><a href=\"https://tvs.instructure.com/courses/%s/modules/%s\"> %s</a></li>" %(course, module['id'], module['name'])
+    # homepagetext+=" </ul>"
+    # page=apipost("%scourses/%s/pages" %(config.apiurl,course),{'wiki_page[title]': 'Home Page', 'wiki_page[body]': homepagetext, 'wiki_page[published]': 'true', 'wiki_page[front_page]': 'true' },config)
+    #
+
+@cli.command(help="Get a list of all projects/quizzes/tests in a given term.")
+@click.argument('term', nargs=1, type=int)
+@pass_config
+def listassignments(config,term):
+    courses = apiget("%saccounts/1/courses" %(config.apiurl),{'enrollment_term_id': term},config)
+    output=""
+    if(len(courses)>0):
+        for c in courses:
+            numa=0
+            assigntext=""
+            assignments = apiget("%scourses/%s/assignments" %(config.apiurl,c['id']),{'enrollment_term_id': term},config)
+            for a in assignments:
+                if(a['published'] and ("quiz" in a['name'] or "Quiz" in a['name'] or "Test" in a['name'] or "test" in a['name'] or "project" in a['name']
+                or "Project" in a['name'] or "exam" in a['name'] or "Exam" in a['name'])):
+                    assigntext+=("\n\t%s" %(a['name']))
+                    numa+=1
+            if assigntext != "":
+                output += "%s\n%s" %(c['name'], assigntext)
+                click.echo(output)
+    else:
+        click.echo("No courses in term!")
+    click.echo(output)
+
+@cli.command(help="Make assignments for a course. (Philip Custom)")
+@click.argument('course', nargs=1, type=int)
+@click.argument('titleprefix', nargs=1, )
+@click.argument('numberofassignments', nargs=1, type=int)
+@click.argument('descurl', nargs=1, )
+@pass_config
+def makeassignments(config,course,titleprefix,numberofassignments,descurl,):
+    for i in range(1,numberofassignments+1):
+        a=apipost("%scourses/%s/assignments" %(config.apiurl,course), {'assignment[name]': '%s%s' %(titleprefix, i), 'assignment[submission_types][]': 'on_paper', 'assignment[points_possible]': '0', 'assignment[description]': 'Go <a href=\"%s\">here</a> for more details.' %descurl, 'assignment[published]': 'true',  }, config)
+        print(a)
 
 
 ##########   API UTILITIES   ###########
